@@ -1,0 +1,56 @@
+services:
+  caddy:
+    image: caddy:latest
+    restart: on-failure:5
+    ports:
+      - "80:80"
+      - "443:443"
+    mem_limit: "256m"
+    cpus: 0.25
+    pids_limit: 50
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - caddy_data:/data
+      - ${DATA_FOLDER}/caddy_config:/config
+      - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
+
+  n8n:
+    build: .
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    mem_limit: "768m"
+    cpus: 0.25
+    pids_limit: 50
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
+    environment:
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - DB_SQLITE_POOL_SIZE=10
+      - N8N_PROXY_HOPS=1
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - NODE_FUNCTION_ALLOW_EXTERNAL=@tryfabric/martian
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ${DATA_FOLDER}/local_files:/files
+      
+volumes:
+  caddy_data:
+    external: true
+  n8n_data:
+    external: true
