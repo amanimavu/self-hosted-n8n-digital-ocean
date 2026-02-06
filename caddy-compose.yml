@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: caddy:latest
+    restart: on-failure:5
+    ports:
+      - "80:80"
+      - "443:443"
+    mem_limit: "256m"
+    cpus: 0.25
+    pids_limit: 50
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - caddy_gateway
+    volumes:
+      - caddy_data:/data
+      - ${DATA_FOLDER}/caddy_config:/config
+      - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
+
+volumes:
+  caddy_data:
+    external: true
+networks:
+  caddy_gateway:
+    external: true
