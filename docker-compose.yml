@@ -12,6 +12,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - caddy_gateway
+      - default
     volumes:
       - caddy_data:/data
       - ${DATA_FOLDER}/caddy_config:/config
@@ -21,6 +24,7 @@ services:
     build: .
     container_name: n8n
     restart: always
+    #user: root
     ports:
       - "5678:5678"
     mem_limit: "768m"
@@ -35,6 +39,8 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - NODE_ENV=production
+      - N8N_PAYLOAD_SIZE_MAX=2048
+      - NODE_OPTIONS=--max-old-space-size=2048
       - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       - DB_SQLITE_POOL_SIZE=10
@@ -43,14 +49,29 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
       - NODE_FUNCTION_ALLOW_EXTERNAL=@tryfabric/martian
+      - N8N_ENCRYPTION_KEY=sacf1RPBi1gEh4kGhWwFgefed+cDItY5
     volumes:
       - n8n_data:/home/node/.n8n
+      - telegram_data:/home/node/.n8n-files/telegram:ro
       - ${DATA_FOLDER}/local_files:/files
-      
+    networks:
+      - telegram_shared
+      - caddy_gateway
+
 volumes:
-  caddy_data:
-    external: true
   n8n_data:
     external: true
+  caddy_data:
+    external: true
+  telegram_data:
+    external: true
+    name: telegram_telegram-bot-api-data
+
+networks:
+  caddy_gateway:
+    external: true
+  telegram_shared:
+    external: true
+
