@@ -3,3 +3,15 @@ automation.amani-mavu.com {
 		flush_interval -1
 	}
 }
+
+evolution.amani-mavu.com {
+	reverse_proxy evolution_api:8080 {
+		flush_interval -1
+	}
+}
+
+pgadmin.amani-mavu.com {
+	reverse_proxy pgadmin:80 {
+		flush_interval -1
+	}
+}
